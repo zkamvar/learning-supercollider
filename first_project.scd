@@ -1,11 +1,17 @@
 s.quit;
 s.boot;
+s = Server.default;
+
+
+// but its easy to make a server window
+s.makeWindow;
 f = { [SinOsc.ar(440, 0, 0.2), SinOsc.ar(442, 0, 0.2)] };
 // f.play;
 // Everything wrapped in {} are functions.
 // Arguments are the first part of functions
 f = { arg a; a.value + 3 };
 f.value(3);
+
 // integers and floats have randomization methods
 g = { 12.0.rand; };
 f.value(g);
@@ -94,3 +100,97 @@ myPower.value(3, pow: 3).postln;
         })
     }.play;
 )
+s.scope;
+
+// PLOTTING
+// The plot function allows me to see what the waves look like
+{ PinkNoise.ar(0.2) + SinOsc.ar(440, 0, 0.2) + Saw.ar(660, 0.2) }.plot();
+
+{ PinkNoise.ar(0.2) + SinOsc.ar(440, 0, 0.2) + Saw.ar(660, 0.2) }.plot();
+
+// An oscilloscope
+{ PinkNoise.ar(0.2) + SinOsc.ar(440, 0, 0.2) + Saw.ar(660, 0.2) }.scope;
+
+// Multiple channels
+{ [SinOsc.ar(440, 0, 0.2), SinOsc.ar(442, 0, 0.2)] }.scope;
+
+// Zooming
+{ [SinOsc.ar(440, 0, 0.2), SinOsc.ar(442, 0, 0.2)] }.scope(zoom: 5);
+
+SinOsc
+Function
+// Using an environment
+(
+f = { |a, b| (a * b).postln };
+
+Environment.use({
+  ~a = 3;
+  ~b = 10;
+  f.valueEnvir;
+});
+)
+
+// Loops and clocks
+t = Task({ { "I'm loopy".postln; 1.wait;}.loop });
+t.start;
+t.stop;
+
+{ "2 seconds have passed.".postln; }.defer(2);
+
+(
+{ "chicken".postln }.defer(0); // schedules on the AppClock
+{ "egg".postln }.defer // evaluates immediately
+)
+
+(
+fork { // schedules on a TempoClock
+    { "chicken".postln }.defer // schedules on the AppClock
+};
+{ "egg".postln }.defer // evaluates immediately
+)
+
+
+(
+var i, x, z;
+z = [0, 1, 1.1, 1.3, 1.5, 2];
+i = z.choose;
+x = case
+    { i == 1 }   { \no }
+    { i == 1.1 } { \wrong }
+    { i == 1.3 } { \wrong }
+    { i == 1.5 } { \wrong }
+    { i == 2 }   { \wrong }
+    { i == 0 }   { \true };
+x.postln;
+)
+
+
+// a strange mapping
+(
+var f = {|degree, stepsPerOctave, acc|
+    (1.8 ** (degree % stepsPerOctave) + acc).postln
+};
+Pbind(
+    \scale, f,
+    \degree, Pseq([0, 1, 2b, 3s, 4s, 6, 14, [0, 2, 4], [1, 3, 6]], inf)
+).play
+)
+
+x = { |freq = 440| SinOsc.ar(freq, 0, 0.3) }.play; // this returns a Synth object;
+x.set(\freq, 880); // note you can set the freq argument
+x.defName; // the name of the resulting SynthDef (generated automatically in a cycle of 512)
+x.release(4); // fadeout over 4 seconds
+
+{ SinOsc.ar(440, 0, 0.3) }.play(fadeTime: 0.0);
+Array
+
+Array.fill2D(2, 4, 0);
+Array.fill2D(3, 4, { arg r, c; r*c+c; });
+
+Array.geom(5, pi/3, 3).postln;
+
+Array.series(5, 10, 2).postln;
+
+
+x = [ 1, 2, 3];
+8.do({|i| x.permute(i).postln;});
