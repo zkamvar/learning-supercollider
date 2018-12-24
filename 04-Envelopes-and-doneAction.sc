@@ -91,7 +91,11 @@ x.set(\t_gate, 1);
 (
 x = {
     arg gate=0;
-    var sig, env;
+    var sig, env, freq;
+    freq = EnvGen.kr(Env.adsr(attackTime: 1),
+        gate: gate,
+        levelScale: 200,
+        levelBias: 0.1);
     env = EnvGen.kr(Env.adsr(
         attackTime: 0.02,
         decayTime: 0.2,
@@ -102,7 +106,7 @@ x = {
     ),
     gate: gate, // Gate is preferable to t_gate since we want the sustain
     doneAction: 2); // we only want this to go on for the duration
-    sig = VarSaw.ar(SinOsc.kr(16).range(500, 1000)) * env;
+    sig = VarSaw.ar(SinOsc.kr(freq).range(500, 1000)) * env;
 }.play;
 )
 x.set(\gate, 1);
