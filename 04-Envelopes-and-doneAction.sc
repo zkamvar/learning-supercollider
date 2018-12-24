@@ -70,6 +70,8 @@ Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [\sine, \sine, 0]).pl
 // A gate can be used as a trigger. This will trigger as soon as it goes above 0.
 // The only issue here is that the gate needs to be reset.
 // If we use t_gate, then it will reset itself after the cycle is complete.
+//
+// This is a persistant synth because doneAction: 0
 (
 x = {
     arg t_gate=0;
@@ -84,4 +86,29 @@ x = {
 }.play;
 )
 x.set(\t_gate, 1);
+
+// Using an adsr envelope (Attak, Decay, Sustain, Release) with gate
+(
+x = {
+    arg gate=0;
+    var sig, env;
+    env = EnvGen.kr(Env.adsr(
+        attackTime: 0.02,
+        decayTime: 0.2,
+        sustainLevel: 0.25,
+        releaseTime: 1,
+        peakLevel: 1,
+        curve: -4
+    ),
+    gate: gate, // Gate is preferable to t_gate since we want the sustain
+    doneAction: 2); // we only want this to go on for the duration
+    sig = VarSaw.ar(SinOsc.kr(16).range(500, 1000)) * env;
+}.play;
+)
+x.set(\gate, 1);
+
+x.set(\gate, 0);
+Env.adsr(0.02, 0.2, 0.25, 1, 1, -4).test(2).plot;
+
+
 s.quit;
