@@ -23,4 +23,47 @@ s.plotTree; // Visualise the active synths
 )
 
 
+// EnvGens ----------------------------------------------------------------------
+//
+// All EnvGens need an Env. The starting point is a triangluar Env
+//    levels: [0, 1, 0] // start at zero, go to one, end at zero
+//    times:   [1, 1]   // durations between each level
+//    curve:  'lin'     // linearly interpolate between points
+// Env.new.plot;
+( // Default env: A traingle. This will increase the amplitude from zero to one
+  // and back to zero in two seconds.
+{
+    var sig, env;
+    env = EnvGen.kr(Env.new, doneAction: 2);
+    sig = Pulse.ar(ExpRand(30, 500)) * env
+}.play;
+)
+
+// Our own env. We can set something like
+Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2]).plot;
+// Exponential can't interpolate if it includes zero
+Env.new(levels: [0.001 , 1, 0.2, 0.001], times: [0.5, 1, 2], curve: \exp).plot;
+// We can also have an array specifying the curvature for each time.
+// Positive: slow then quick
+// Negative: quick then slow
+// zero: linear
+Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [3, -3, 0]).plot;
+// further from zero is more extreme
+Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [13, -13, 0]).plot;
+// Reversing gives us a different shape
+Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [-3, 3, 0]).plot;
+// We can replace numbers with symbols
+Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [\sine, \sine, 0]).plot;
+
+(
+{
+    var sig, env;
+    env = EnvGen.kr(Env.new(
+        levels: [0, 1, 0.2, 0],
+        times: [0.5, 1, 2],
+        curve: [3, -3, 0]),
+    doneAction: 2);
+    sig = Pulse.ar(ExpRand(30, 500)) * env
+}.play;
+)
 s.quit;
