@@ -86,7 +86,7 @@ x = {
 }.play;
 )
 x.set(\t_gate, 1);
-
+x.free;
 // Using an adsr envelope (Attak, Decay, Sustain, Release) with gate
 (
 x = {
