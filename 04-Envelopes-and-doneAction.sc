@@ -55,15 +55,33 @@ Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [-3, 3, 0]).plot;
 // We can replace numbers with symbols
 Env.new(levels: [0, 1, 0.2, 0], times: [0.5, 1, 2], curve: [\sine, \sine, 0]).plot;
 
+// Here's what it sounds like when we create the envelope with our custom levels
 (
 {
     var sig, env;
     env = EnvGen.kr(Env.new(
         levels: [0, 1, 0.2, 0],
-        times: [0.5, 1, 2],
-        curve: [3, -3, 0]),
+        times:  [0.5, 1, 2],
+        curve:  [3, -3, 0]),
     doneAction: 2);
     sig = Pulse.ar(ExpRand(30, 500)) * env
 }.play;
 )
+// A gate can be used as a trigger. This will trigger as soon as it goes above 0.
+// The only issue here is that the gate needs to be reset.
+// If we use t_gate, then it will reset itself after the cycle is complete.
+(
+x = {
+    arg t_gate=0;
+    var sig, env;
+    env = EnvGen.kr(Env.new(
+        levels: [0, 1, 0.2, 0],
+        times:  [0.5, 1, 2],
+        curve:  [3, -3, 0]),
+    gate: t_gate,
+    doneAction: 0); // We want this to be re-triggerable:
+    sig = Pulse.ar(LFPulse.kr(8).range(600, 900)) * env
+}.play;
+)
+x.set(\t_gate, 1);
 s.quit;
