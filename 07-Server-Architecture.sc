@@ -45,3 +45,17 @@ y = Synth.new(\reverb, [\in, 6]);
 x = Synth.new(\blip, [\out, 6]);
 x.free; // x can be freed while y remains to complete the sound.
 y.free;
+
+// The above (using an integer to define a bus) is problematic because you don't always know
+// where the private audio busses start. It's better to use the Bus.audio method
+// This will always choose the lowest available bus that doesn't conflict with the
+// audio servers.
+~reverbBus = Bus.audio(server: s, numChannels: 1);
+~reverbBus.index;
+
+y = Synth.new(\reverb, [\in, ~reverbBus]);
+x = Synth.new(\blip, [\out, ~reverbBus]);
+x.free; // x can be freed while y remains to complete the sound.
+y.free;
+
+
