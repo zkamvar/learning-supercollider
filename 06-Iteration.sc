@@ -80,8 +80,8 @@ SynthDef.new(\iter2, {
 )
 
 x = Synth.new(\iter2);
-x.set(\freq, 36.9);
-x.set(\freq, 50);
+x.set(\freq, 26.midicps);
+x.set(\freq, 31.midicps);
 x.set(\dev, 1.06);
 x.set(\dev, 1.01);
 x.set(\dev, 1.51);
