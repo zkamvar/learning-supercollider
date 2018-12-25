@@ -161,9 +161,10 @@ SynthDef.new(\reverb, {
 )
 
 // We can now use the group to relay arguments to all nodes inside the group
-~srcGrp.set(\decay, 0.01);
+~srcGrp.set(\decay, 0.03);
 ~srcGrp.set(\dens, 16);
 ~srcGrp.set(\dens, 0.25);
 ~srcGrp.set(\decay, 1.2);
 ~srcGrp.set(\decay, 5.2);
 ~srcGrp.freeAll;
+s.freeAll;
