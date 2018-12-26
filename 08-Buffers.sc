@@ -168,3 +168,27 @@ SynthDef.new(\bufrd, {
 Synth.new(\bufrd, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1]);
 // Play the file backward
 Synth.new(\bufrd, [\buf, ~huh.bufnum, \end, 0, \start, ~huh.numFrames - 1]);
+
+// Looping with buffrd
+(
+SynthDef.new(\bufrd_loop, {
+    arg amp = 1, out = 0, buf, start, end, rate = 1;
+    var sig, ptr;
+    ptr = Phasor.ar(
+        trig: 0,
+        rate: BufRateScale.kr(buf) * rate,
+        start: start,
+        end: end
+    );
+    sig = BufRd.ar(
+        numChannels: 2,
+        bufnum: buf,
+        phase: ptr
+    );
+    sig = sig * amp;
+    Out.ar(out, sig);
+}).add;
+)
+x = Synth.new(\bufrd_loop, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1]);
+x.set(\start, ~huh.numFrames/2);
+x.free;
