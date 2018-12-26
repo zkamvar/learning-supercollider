@@ -123,5 +123,46 @@ Synth.new(\playbuf, [\buf, ~drms[5].bufnum, \amp, 0.25, \rate, 3])
 7.midiratio
 Synth.new(\playbuf, [\buf, ~huh.bufnum, \rate, 1])
 Synth.new(\playbuf, [\buf, ~huh.bufnum, \rate, 7.midiratio])
+Synth.new(\playbuf, [\buf, ~huh.bufnum, \rate, 12.midiratio])
+
+// We can use groups to group these all together
+g = Group.new;
+(
+x = Synth.new(\playbuf, [\buf, ~huh.bufnum, \rate, 1.5, \loop, 1, \amp, 0.5], target: g);
+y = Synth.new(\playbuf, [\buf, ~huh25.bufnum, \rate, 0.75, \loop, 1, \amp, 0.5], target: g);
+z = Synth.new(\playbuf, [\buf, ~huh.bufnum, \rate, 2.5, \loop, 1, \amp, 0.5], target: g);
+)
+
+g.set(\rate, 0.5);
+g.set(\buf, ~huh.bufnum);
+x.set(\rate, exprand(0.2, 2.0));
+y.set(\rate, exprand(0.2, 2.0));
+z.set(\rate, exprand(0.2, 2.0));
+g.set(\loop, 0)
+g.free;
 
 
+// BufRd
+
+(
+SynthDef.new(\bufrd, {
+    arg amp = 1, out = 0, buf;
+    var sig, ptr;
+    ptr = Line.ar(
+        start: 0,
+        end:   BufFrames.kr(buf) - 1,
+        dur:   BufDur.kr(buf),
+        doneAction: 2
+    );
+    sig = BufRd.ar(
+        numChannels: 2,
+        bufnum: buf,
+        phase: ptr
+    );
+    sig = sig * amp;
+    Out.ar(out, sig);
+}).add;
+)
+
+Synth.new(\bufrd, [\buf, ~huh.bufnum]);
+Synth.new(\playbuf, [\buf, ~huh.bufnum]);
