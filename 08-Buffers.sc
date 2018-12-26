@@ -146,11 +146,11 @@ g.free;
 
 (
 SynthDef.new(\bufrd, {
-    arg amp = 1, out = 0, buf;
+    arg amp = 1, out = 0, buf, start, end;
     var sig, ptr;
     ptr = Line.ar(
-        start: 0,
-        end:   BufFrames.kr(buf) - 1,
+        start: start,
+        end:   end,
         dur:   BufDur.kr(buf),
         doneAction: 2
     );
@@ -164,5 +164,7 @@ SynthDef.new(\bufrd, {
 }).add;
 )
 
-Synth.new(\bufrd, [\buf, ~huh.bufnum]);
-Synth.new(\playbuf, [\buf, ~huh.bufnum]);
+// Play the file forward
+Synth.new(\bufrd, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1]);
+// Play the file backward
+Synth.new(\bufrd, [\buf, ~huh.bufnum, \end, 0, \start, ~huh.numFrames - 1]);
