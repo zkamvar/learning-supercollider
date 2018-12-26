@@ -170,6 +170,10 @@ Synth.new(\bufrd, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1]);
 Synth.new(\bufrd, [\buf, ~huh.bufnum, \end, 0, \start, ~huh.numFrames - 1]);
 
 // Looping with buffrd
+// The Phasor UGen is good for looping. "A resettable linear amp between two levels"
+// Two other related UGens are:
+//  1. LFSaw
+//  2. Sweep
 (
 SynthDef.new(\bufrd_loop, {
     arg amp = 1, out = 0, buf, start, end, rate = 1;
@@ -190,5 +194,54 @@ SynthDef.new(\bufrd_loop, {
 }).add;
 )
 x = Synth.new(\bufrd_loop, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1]);
-x.set(\start, ~huh.numFrames/2);
+x.set(\start, ~huh.numFrames/5, \end, 2*(~huh.numFrames/5), \rate, 1, \amp, 1);
+x.set(\start, 4000, \end, 900, \rate, 0.05, \amp, 5);
+x.set(\start, ~huh.numFrames/5, \end, 2*(~huh.numFrames/5));
 x.free;
+
+// We can use ANY audio rate (ar) UGen as a frame pointer. Here, we can use SinOsc
+// To read a buffer forward and backward sinusoidally.
+(
+SynthDef.new(\bufrd_sin, {
+    arg amp = 1, out = 0, buf, start, end, freq = 1;
+    var sig, ptr;
+    ptr = SinOsc.ar(
+        freq: freq,
+        phase: 3pi/2     // lowest point of sinewave (the start of the track)
+    ).range(start, end); // ensure the range is correct
+    sig = BufRd.ar(
+        numChannels: 2,
+        bufnum: buf,
+        phase: ptr
+    );
+    sig = sig * amp;
+    Out.ar(out, sig);
+}).add;
+)
+x = Synth.new(\bufrd_sin, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1, \freq, 0.75]);
+x.set(\start, ~huh.numFrames/5, \end, 4*(~huh.numFrames/5));
+x.set(\start, 4000, \end, 900);
+x.free;
+// To hear random sections of the sound file at random speeds, you can use
+// a noise generator
+(
+SynthDef.new(\bufrd_noise, {
+    arg amp = 1, out = 0, buf, start, end, freq = 1;
+    var sig, ptr;
+    ptr = LFDNoise1.ar(freq).range(start, end); // ensure the range is correct
+    sig = BufRd.ar(
+        numChannels: 2,
+        bufnum: buf,
+        phase: ptr
+    );
+    sig = sig * amp;
+    Out.ar(out, sig);
+}).add;
+)
+x = Synth.new(\bufrd_noise, [\buf, ~huh.bufnum, \start, 0, \end, ~huh.numFrames - 1, \freq, 1]);
+x.set(\freq, 10);
+x.set(\freq, 7);
+x.free;
+
+// Question: how do I write to buffers?
+// RecordBuf and BufWrite.. Look up their help files
