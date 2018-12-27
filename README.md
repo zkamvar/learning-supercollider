@@ -12,8 +12,12 @@ better than attempting to learn from reading through the manual.
 
 # My setup
 
-I'm using SuperCollider version 3.9.3 on macOS with vim 8 and the
-[supercollider/scvim](https://github.com/supercollider/scvim/) plugin.
-I currently use iTerm2 as my main terminal and the `:SClangStart` currently
-opens in the Terminal.app. I haven't yet tried to use it with tmux, but it
-works pretty well right now and I'm happy about that.
+I'm using SuperCollider version 3.10.0 on macOS and Ubuntu 18.04.
+On Ubuntu, I'm using vim 8 and the [supercollider/scvim](https://github.com/supercollider/scvim/) 
+plugin. I had installed SuperCollider from source using the [instructions for
+Linux](https://github.com/supercollider/supercollider/blob/master/README_LINUX.md)
+help file. I haven't successfully installed it with gui support, but I was able
+to get over a hurdle by installing `jackd2`, which was not listed. I cannot run
+the server without starting sclang as root, though, which is really unfortunate.
+
+For MacOS, I'm using the scide because it actually works there.
