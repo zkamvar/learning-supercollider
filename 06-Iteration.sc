@@ -1,8 +1,9 @@
-// It's common to take a collection of items and iterate over them, placing them into a function
-// SC has a class called Collection, which has subclasses such as Array, Set, Bag, etc.
+// It's common to take a collection of items and iterate over them, placing
+// them into a function SC has a class called Collection, which has subclasses
+// such as Array, Set, Bag, etc.
 //
-// iterations are methods of Collections. The most general method is the do method.
-// The do method evaluates a function for each item in the collection
+// iterations are methods of Collections. The most general method is the do
+// method.  The do method evaluates a function for each item in the collection
 //
 // Here, we are writing the squares of the array into a new array called x.
 (
@@ -42,7 +43,8 @@ SynthDef.new(\iter, {
     10.do {
         temp = VarSaw.ar(
             freq: freq * {Rand(0.99, 1.02)}!2,
-            iphase: {Rand(0.0, 1.0)}!2, // 0, having the same initial phase offset creates clipping
+            iphase: {Rand(0.0, 1.0)}!2, // 0, having the same initial phase
+                                        // offset creates clipping
             width: {ExpRand(0.005, 0.05)}!2
         );
         sum = sum + temp;
@@ -64,14 +66,18 @@ SynthDef.new(\iter2, {
     arg freq = 200, dev = 1.02;
     var temp, sum;
     sum = 0;
-    10.do { // NOTE: you cannot change this iteration with an arg. It must be changed manually
-        arg count; // note that we do not need a second arg here because it's redundant
+    10.do { // NOTE: you cannot change this iteration with an arg. It must be
+            // changed manually
+        arg count; // note that we do not need a second arg here because it's
+                   // redundant
         temp = SinOsc.ar(
             freq *
             (count + 1) *
-            LFNoise1.kr({Rand(0.05, 0.2)}!2).range(dev.reciprocal, dev) // have the partials fluctuate randomly
+            LFNoise1.kr({Rand(0.05, 0.2)}!2)
+              .range(dev.reciprocal, dev) // have partials fluctuate randomly
         );
-        temp = temp * LFNoise1.kr({Rand(0.05, 8)}!2).exprange(0.01, 1); // have the amplitud fluctuate randomly
+        temp = temp * LFNoise1.kr({Rand(0.05, 8)}!2)
+                        .exprange(0.01, 1); // have amplitude fluctuate randomly
         sum  = sum + temp;
     };
     sum = sum * 0.05;
