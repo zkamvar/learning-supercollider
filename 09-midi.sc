@@ -30,7 +30,7 @@ MIDIdef.noteOn(\noteOnTest, {"key down".postln}).permanent_(true);
 
 // Printing MIDI data
 (
-MIDIdef(\noteOnTest, {
+MIDIdef.noteOn(\noteOnTest, {
     // val,vel = message value (e.g velocity, control value, etc)
     // num,nn = note number
     // chan = MIDI channel <- not really used
@@ -79,7 +79,7 @@ SynthDef.new(\tone, [\freq, 700, \amp, 0.5]);
 // Now instead of providing a function to the MIDIdef, we can use a
 // SynthDef and add the correct parameters
 (
-MIDIdef(\noteOnTest, {
+MIDIdef.noteOn(\noteOnTest, {
     // val,vel = message value (e.g velocity, control value, etc)
     // num,nn = note number
     // chan = MIDI channel <- not really used
@@ -93,5 +93,58 @@ MIDIdef(\noteOnTest, {
             \amp, vel.linexp(1, 127, 0.01, 0.3)
         ]
     );
+});
+)
+
+// Using a sustaining MIDI while dealing with MIDI polyphony
+(
+SynthDef.new(\polytone, {
+    arg freq = 440, amp = 0.3, gate: 0;
+    var sig, env;
+    sig = LFTri.ar(freq)!2;
+    // Make sure the sin waves turn themselves off somehow
+    env = EnvGen.kr(Env.adsr, gate: gate doneAction: 2); // short bursts
+    // velocity used in the traditional sense
+    // We are mapping the linear range [1, 127] to
+    // the exponential range [0.01, 0.3]
+    sig = sig * env * amp;
+    Out.ar(bus: 0, channelsArray: sig);
+}).add;
+)
+
+// One way to deal with the polyphony is to create an array of length 128,
+// one element for each midi note.
+
+~notes = Array.newClear(128);
+(
+MIDIdef.noteOn(\noteOnTest, {
+    // val,vel = message value (e.g velocity, control value, etc)
+    // num,nn = note number
+    // chan = MIDI channel <- not really used
+    // src = MIDI source   <- not really used
+    arg vel, nn, chan, src;
+    [vel, nn, chan, src].postln;
+    ~notes[nn] = SynthDef.new(
+        \tone,
+        [
+            \freq, nn.midicps,
+            \amp, vel.linexp(1, 127, 0.01, 0.3)
+        ]
+    );
+});
+)
+// But! This only handles note On messages and if we play them, then
+// they will be stuck indefinitely. To handle this, we need to create
+// a note off midi def.
+(
+MIDIdef.noteOff(\noteOffTest, {
+    // val,vel = message value (e.g velocity, control value, etc)
+    // num,nn = note number
+    // chan = MIDI channel <- not really used
+    // src = MIDI source   <- not really used
+    arg vel, nn, chan, src;
+    [vel, nn, chan, src].postln;
+    ~notes[nn].set(\gate, 0);
+    ~notes[nn] = nil;
 });
 )
