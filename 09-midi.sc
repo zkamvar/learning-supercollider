@@ -39,7 +39,7 @@ MIDIdef(\noteOnTest, {
     [vel, nn, chan, src].postln;
     {
         var sig, env;
-        sig = SinOsc.ar(nn.midicps)!2;
+        sig = LFTri.ar(nn.midicps)!2;
         // Make sure the sin waves turn themselves off somehow
         env = EnvGen.kr(Env.perc, doneAction: 2); // short bursts
         // velocity used in the traditional sense
