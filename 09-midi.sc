@@ -103,7 +103,7 @@ SynthDef.new(\polytone, {
     var sig, env;
     sig = LFTri.ar(freq)!2;
     // Make sure the sin waves turn themselves off somehow
-    env = EnvGen.kr(Env.adsr, gate: gate doneAction: 2); // short bursts
+    env = EnvGen.kr(Env.adsr, gate: gate, doneAction: 2); // short bursts
     // velocity used in the traditional sense
     // We are mapping the linear range [1, 127] to
     // the exponential range [0.01, 0.3]
@@ -160,11 +160,11 @@ MIDIdef.noteOff(\noteOffTest, {
 MIDIdef.bend(\bendTest, {
     arg vel, chan, src;
     [vel, chan, src].postln;
-    ~bend = val; // update global variable to keep track
+    ~bend = vel; // update global variable to keep track
     // iterate over all the notes and transpose from one linear scale
     // to another.
-    ~notes.do{arg synth; synth.set(\bend, val.linlin(0, 16383, -2, 2))};
-}, chan: 0)
+    ~notes.do{arg synth; synth.set(\bend, vel.linlin(0, 16383, -2, 2))};
+}, chan: 0);
 
 
 
@@ -173,7 +173,7 @@ SynthDef.new(\polybend, {
     var sig, env;
     sig = LFTri.ar(freq * bend.midiratio)!2; // midiratio: convert from semitones to a ratio
     // Make sure the sin waves turn themselves off somehow
-    env = EnvGen.kr(Env.adsr, gate: gate doneAction: 2); // short bursts
+    env = EnvGen.kr(Env.adsr, gate: gate, doneAction: 2); // short bursts
     // velocity used in the traditional sense
     // We are mapping the linear range [1, 127] to
     // the exponential range [0.01, 0.3]
