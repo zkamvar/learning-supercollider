@@ -244,4 +244,4 @@ x.set(\freq, 7);
 x.free;
 
 // Question: how do I write to buffers?
-// RecordBuf and BufWrite.. Look up their help files
+// RecordBuf and BufWr.. Look up their help files
