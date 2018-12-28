@@ -99,7 +99,7 @@ MIDIdef.noteOn(\noteOnTest, {
 // Using a sustaining MIDI while dealing with MIDI polyphony
 (
 SynthDef.new(\polytone, {
-    arg freq = 440, amp = 0.3, gate: 0;
+    arg freq = 440, amp = 0.3, gate = 0;
     var sig, env;
     sig = LFTri.ar(freq)!2;
     // Make sure the sin waves turn themselves off somehow
@@ -114,9 +114,9 @@ SynthDef.new(\polytone, {
 
 // One way to deal with the polyphony is to create an array of length 128,
 // one element for each midi note.
-
-~notes = Array.newClear(128);
 (
+~notes = Array.newClear(128);
+
 MIDIdef.noteOn(\noteOnTest, {
     // val,vel = message value (e.g velocity, control value, etc)
     // num,nn = note number
@@ -125,18 +125,18 @@ MIDIdef.noteOn(\noteOnTest, {
     arg vel, nn, chan, src;
     [vel, nn, chan, src].postln;
     ~notes[nn] = SynthDef.new(
-        \tone,
+        \polytone,
         [
             \freq, nn.midicps,
             \amp, vel.linexp(1, 127, 0.01, 0.3)
         ]
     );
 });
-)
+
 // But! This only handles note On messages and if we play them, then
 // they will be stuck indefinitely. To handle this, we need to create
 // a note off midi def.
-(
+
 MIDIdef.noteOff(\noteOffTest, {
     // val,vel = message value (e.g velocity, control value, etc)
     // num,nn = note number
@@ -147,4 +147,69 @@ MIDIdef.noteOff(\noteOffTest, {
     ~notes[nn].set(\gate, 0);
     ~notes[nn] = nil;
 });
+)
+
+// MIDI def with pitch bend. Note that in the video, Eli noticed there were
+// three channels being used by the wheel. He adjusted the midi def to use
+// only the the zero channel
+
+
+(
+
+~bend = 8192; // global variable to track pitch wheel position;
+MIDIdef.bend(\bendTest, {
+    arg vel, chan, src;
+    [vel, chan, src].postln;
+    ~bend = val; // update global variable to keep track
+    // iterate over all the notes and transpose from one linear scale
+    // to another.
+    ~notes.do{arg synth; synth.set(\bend, val.linlin(0, 16383, -2, 2))};
+}, chan: 0)
+
+
+
+SynthDef.new(\polybend, {
+    arg freq = 440, amp = 0.3, gate = 0, bend = 0;
+    var sig, env;
+    sig = LFTri.ar(freq * bend.midiratio)!2; // midiratio: convert from semitones to a ratio
+    // Make sure the sin waves turn themselves off somehow
+    env = EnvGen.kr(Env.adsr, gate: gate doneAction: 2); // short bursts
+    // velocity used in the traditional sense
+    // We are mapping the linear range [1, 127] to
+    // the exponential range [0.01, 0.3]
+    sig = sig * env * amp;
+    Out.ar(bus: 0, channelsArray: sig);
+}).add;
+
+MIDIdef.noteOn(\noteOnTest, {
+    // val,vel = message value (e.g velocity, control value, etc)
+    // num,nn = note number
+    // chan = MIDI channel <- not really used
+    // src = MIDI source   <- not really used
+    arg vel, nn, chan, src;
+    [vel, nn, chan, src].postln;
+    ~notes[nn] = SynthDef.new(
+        \polybend,
+        [
+            \freq, nn.midicps,
+            \amp, vel.linexp(1, 127, 0.01, 0.3)
+        ]
+    );
+});
+
+// But! This only handles note On messages and if we play them, then
+// they will be stuck indefinitely. To handle this, we need to create
+// a note off midi def.
+
+MIDIdef.noteOff(\noteOffTest, {
+    // val,vel = message value (e.g velocity, control value, etc)
+    // num,nn = note number
+    // chan = MIDI channel <- not really used
+    // src = MIDI source   <- not really used
+    arg vel, nn, chan, src;
+    [vel, nn, chan, src].postln;
+    ~notes[nn].set(\gate, 0);
+    ~notes[nn] = nil;
+});
+
 )
