@@ -192,7 +192,9 @@ MIDIdef.noteOn(\noteOnTest, {
         \polybend,
         [
             \freq, nn.midicps,
-            \amp, vel.linexp(1, 127, 0.01, 0.3)
+            \amp, vel.linexp(1, 127, 0.01, 0.3),
+            \gate, 1,
+            \bend, ~bend.linlin(0, 16383, -2, 2)
         ]
     );
 });
