@@ -79,7 +79,8 @@ p = Pbind(
 )
 p.stop;
 
-// Random number generation
+// Random number generation: sounds spooky and shows the power of this
+// fully operational space station
 (
 p = Pbind(
     \type, \note,
@@ -89,9 +90,80 @@ p = Pbind(
             .trace,
     \atk, Pwhite(2.0, 3.0, inf),
     \rel, Pwhite(5.0, 10.0, inf),
-    \amp, Pwhite(0.01, 0.2, inf), // lower the amplitude to avoid clipping
+    \amp, Pexprand(0.01, 0.2, inf), // lower the amplitude to avoid clipping
     \pan, Pwhite(-0.8, 0.8, inf),
 ).play;
 )
 s.plotTree;
-p.stop;  
+p.stop;
+
+// Let's say we want these to fall in line with the harmonic series
+// We can achieve this with the "round" method
+(
+p = Pbind(
+    \type, \note,
+    \instrument, \sine,
+    \dur, Pwhite(0.05, 0.5, inf),
+    \freq, Pexprand(50, 4000, inf).round(55).trace,
+    \atk, Pwhite(2.0, 3.0, inf),
+    \rel, Pwhite(5.0, 10.0, inf),
+    \amp, Pexprand(0.01, 0.2, inf),
+    \pan, Pwhite(-0.8, 0.8, inf),
+).play;
+)
+
+p.stop;
+
+// This can also be achieved using midinote and harmonic
+(
+p = Pbind(
+    \type, \note,
+    \instrument, \sine,
+    \dur, Pwhite(0.05, 0.5, inf),
+    \midinote, 33,  // partials of midinote 33
+    \harmonic, Pexprand(1, 80, inf).round.trace,
+    \atk, Pwhite(2.0, 3.0, inf),
+    \rel, Pwhite(5.0, 10.0, inf),
+    \amp, Pexprand(0.01, 0.2, inf),
+    \pan, Pwhite(-0.8, 0.8, inf),
+).play;
+)
+
+p.stop;
+
+// We can also control the amplitude of the partials by using Pkey
+(
+p = Pbind(
+    \type, \note,
+    \instrument, \sine,
+    \dur, Pwhite(0.05, 0.5, inf),
+    \midinote, 33,
+    \harmonic, Pexprand(1, 80, inf).round.trace,
+    \atk, Pwhite(2.0, 3.0, inf),
+    \rel, Pwhite(5.0, 10.0, inf),
+    \amp, Pkey(key: \harmonic).reciprocal * 0.3, // emphasize lower notes
+    \pan, Pwhite(-0.8, 0.8, inf),
+).play;
+)
+
+p.stop;
+
+// If we want to manipulate the pattern in real time, we use a Pdef
+
+(
+Pdef( // Any field here can be modified and re-run in real time without
+      // interrupting the stream.
+    \sinepat,
+    Pbind(
+        \type, \note,
+        \instrument, \sine,
+        \dur, Pwhite(0.05, 0.5, inf),
+        \midinote, Pseq([40], inf).trace,
+        \harmonic, Pexprand(1, 80, inf).round,
+        \atk, Pwhite(2.0, 3.0, inf),
+        \rel, Pwhite(5.0, 10.0, inf),
+        \amp, Pkey(key: \harmonic).reciprocal * 0.3, // emphasize lower notes
+        \pan, Pwhite(-0.8, 0.8, inf),
+    );
+).play; // replace with stop when finished
+)
