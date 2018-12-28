@@ -37,5 +37,22 @@ MIDIdef(\noteOnTest, {
     // src = MIDI source   <- not really used
     arg vel, nn, chan, src;
     [vel, nn, chan, src].postln;
+    {
+        var sig, env;
+        sig = SinOsc.ar(nn.midicps)!2;
+        // Make sure the sin waves turn themselves off somehow
+        env = EnvGen.kr(Env.perc, doneAction: 2); // short bursts
+        // velocity used in the traditional sense
+        // We are mapping the linear range [1, 127] to
+        // the exponential range [0.01, 0.3]
+        sig = sig * env * vel.linexp(1, 127, 0.01, 0.3);
+    }.play;
 });
 )
+s.boot;
+
+// play some midi notes
+
+
+// This approach is quick and dirty, but it doesn't incorporate things like
+// note off or pitch bends
