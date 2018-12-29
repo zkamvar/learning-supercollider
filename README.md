@@ -65,10 +65,10 @@ sudo apt-get install qt5-default qt5-qmake qttools5-dev qttools5-dev-tools qtdec
 ```
 
  - First pain point: Jack2. I was getting a weird error:
-      exec of JACK server (command = "/usr/bin/jackd") failed: No such file or directory
+        exec of JACK server (command = "/usr/bin/jackd") failed: No such file or directory
    This turned out to be solved by using `sudo apt install jackd2`.
  - Second paint point: 
-      Could not find a package configuration file provided by "Qt5WebSockets"
+        Could not find a package configuration file provided by "Qt5WebSockets"
    I [found the solution on an ubuntu stack exchange site](https://askubuntu.com/questions/374755/what-package-do-i-need-to-build-a-qt-5-cmake-application)
    that suggested to use the [apt-file](https://wiki.ubuntu.com/AptFile) 
    utility. I used it to find that the right package to install was 
