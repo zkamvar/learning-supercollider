@@ -4,7 +4,7 @@
 // chapters, and one reference guide :o
 //
 // There is also Understanding Streams, Patterns and Events
-
+s.boot;
 (
 SynthDef.new(\sine, {
     arg freq = 440, atk = 0.005, rel = 0.3, amp = 1, pan = 0;
@@ -62,7 +62,7 @@ p = Pbind(
 ).play;
 )
 p.stop;
-
+s.plotTree;
 // We don't always have to deal in cps (cycles per second), we can use
 // midinotes or notes or degrees. These are defined in a hierarchy in the
 // Pbind help file. This hierarchy means that we will need to name the
