@@ -44,7 +44,7 @@ au Filetype supercollider inoremap <buffer> <Space> :call SClang_line()<CR>a
 
 " Hardstop is <leader>x
 au Filetype supercollider nnoremap <leader>x :call SClangHardstop()<CR>
-``
+```
 
 ### Installation pains
 
