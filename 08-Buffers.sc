@@ -4,9 +4,11 @@ s.boot;
 // by default for some weird reason. In this case, I can use thisProcess to
 // find the current working directory of the file I'm using. Otherwise, I
 // can start sclang -p $(pwd) on linux
+(
 ~here = Platform.case(
     \osx,   { thisProcess.nowExecutingPath.dirname },
     \linux, { File.getcwd }
+);
 )
 // To use a sound file, we can use the Buffer.read() method
 ~b0 = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
