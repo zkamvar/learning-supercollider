@@ -169,4 +169,73 @@ Pdef( // Any field here can be modified and re-run in real time without
 )
 
 // Beats --------------------------------------------------------------
-// To be continued
+
+(// https://stackoverflow.com/a/18938315/2752888
+~here = if (Platform.ideName == "scqt",       // Test if we are in scide
+    { thisProcess.nowExecutingPath.dirname }, // only works interactively
+    { File.getcwd }                           // assume we used sclang -p $(pwd)
+);
+
+// Loading bubble sounds into a dictionary where we will sort them by
+// low, mid, and hi sounds (roughly).
+d = Dictionary.new;
+d.free;
+
+d.add(\l -> PathName(~here +/+ "sounds/bubbles/low")
+    .entries
+    .collect({ |sf|
+      Buffer.read(server: s, path: sf.fullPath);
+    });
+);
+d.add(\m -> PathName(~here +/+ "sounds/bubbles/mid")
+    .entries
+    .collect({ |sf|
+      Buffer.read(server: s, path: sf.fullPath);
+    });
+);
+d.add(\h -> PathName(~here +/+ "sounds/bubbles/hi")
+    .entries
+    .collect({ |sf|
+      Buffer.read(server: s, path: sf.fullPath);
+    });
+);
+)
+
+/* Test the sounds out
+d[\l].choose.play; 
+d[\m].choose.play;
+d[\h].choose.play;
+*/
+
+// Now we can create a synth that will play our buffer dictionary
+
+(
+SynthDef.new(\bufplay, { 
+  arg buf = 0, rate = 1, amp = 1;
+  var sig;
+  sig = PlayBuf.ar(
+    numChannels: 2, 
+    bufnum: buf, 
+    rate: BufRateScale.ir(buf) * rate,
+    doneAction: 2
+  );
+  sig = sig * amp;
+  Out.ar(0, sig);
+}).add;
+)
+
+/* Synth.new(\bufplay, [\buf, d[\l].choose.bufnum]) */
+
+(
+Pdef(
+  \rhythm,
+  Pbind(
+    \instrument, \bufplay,
+    \dur, Pseq([1/16], inf),
+    \stretch, 1.875, // 60/128 * 4,
+    \buf, Pxrand(d[\l]++d[\h]++d[\m], inf),
+    \rate, 1,
+    \amp, 0.5,
+  );
+).stop;
+)
