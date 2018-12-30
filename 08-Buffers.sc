@@ -1,14 +1,23 @@
 s.boot;
+// https://stackoverflow.com/a/18938315/2752888
+// This isn't perfect, but the MacOS IDE starts at the root level directory
+// by default for some weird reason. In this case, I can use thisProcess to
+// find the current working directory of the file I'm using. Otherwise, I
+// can start sclang -p $(pwd) on linux
+~here = Platform.case(
+    \osx,   { thisProcess.nowExecutingPath.dirname },
+    \linux, { File.getcwd }
+)
 // To use a sound file, we can use the Buffer.read() method
 ~b0 = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
-~huh = Buffer.read(s, Platform.userHomeDir +/+ "Desktop/audio\ projects/laughing/samples/huhuh.aiff")
+~huh = Buffer.read(s, ~here +/+ "sounds/huhuh.aiff")
 ~b0.play;
 ~huh.play;
 
 // Buffers can be zeroed out, but left on the server
 ~huh.zero;
 ~huh.play;
-~huh.read(Platform.userHomeDir +/+ "Desktop/audio\ projects/laughing/samples/huhuh.aiff")
+~huh.read(~here +/+ "sounds/huhuh.aiff")
 ~huh.play;
 
 
@@ -51,9 +60,9 @@ s.sampleRate;
 // Let's say we wanted to read only a quarter of a second from huh
 (
 ~huh25 = Buffer.read(s,
-    Platform.userHomeDir +/+ "Desktop/audio\ projects/laughing/samples/huhuh.aiff",
+    ~here +/+ "sounds/huhuh.aiff",
     startFrame: 0,
-    numFrames: s.sampleRate/4
+    numFrames: ~huh.sampleRate/4
 );
 )
 ~huh25.play;
@@ -73,7 +82,7 @@ s.sampleRate;
 // Read in several files in at once -------------------------------
 // We can load a bunch of buffers into an array
 ~drms = Array.new;
-~folder = PathName.new("/Users/zhian/Desktop/audio projects/Peanut/drums/");
+~folder = PathName.new(~here +/+ "sounds/peanut");
 (
 ~folder.entries.do({
     arg path;
