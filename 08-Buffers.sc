@@ -1,14 +1,9 @@
 s.boot;
-// https://stackoverflow.com/a/18938315/2752888
-// This isn't perfect, but the MacOS IDE starts at the root level directory
-// by default for some weird reason. In this case, I can use thisProcess to
-// find the current working directory of the file I'm using. Otherwise, I
-// can start sclang -p $(pwd) on linux
-(
-~here = Platform.case(
-    \osx,   { thisProcess.nowExecutingPath.dirname },
-    \linux, { File.getcwd }
-);
+(// https://stackoverflow.com/a/18938315/2752888
+~here = if (Platform.ideName == "scqt",       // Test if we are in scide
+    { thisProcess.nowExecutingPath.dirname }, // only works interactively
+    { File.getcwd }                           // assume we used sclang -p $(pwd)
+)
 )
 // To use a sound file, we can use the Buffer.read() method
 ~b0 = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
