@@ -184,19 +184,22 @@ d.free;
 d.add(\l -> PathName(~here +/+ "sounds/bubbles/low")
     .entries
     .collect({ |sf|
-      Buffer.read(server: s, path: sf.fullPath);
+      // Limiting the number of frames to be a half second
+      Buffer.read(server: s, path: sf.fullPath, numFrames: 24000);
     });
 );
 d.add(\m -> PathName(~here +/+ "sounds/bubbles/mid")
     .entries
     .collect({ |sf|
-      Buffer.read(server: s, path: sf.fullPath);
+      // Starting from frame 9000 because of silence at the beginning
+      Buffer.read(server: s, path: sf.fullPath, startFrame: 9000, numFrames: 24000);
     });
 );
 d.add(\h -> PathName(~here +/+ "sounds/bubbles/hi")
     .entries
     .collect({ |sf|
-      Buffer.read(server: s, path: sf.fullPath);
+      // these sounds need to be truncated to an eighth of a second
+      Buffer.read(server: s, path: sf.fullPath, startFrame: 000, numFrames: 6000);
     });
 );
 )
@@ -235,7 +238,7 @@ Pdef(
     \stretch, 1.875, // 60/128 * 4,
     \buf, Pxrand(d[\l]++d[\h]++d[\m], inf),
     \rate, 1,
-    \amp, 0.5,
+    \amp, 0.6,
   );
 ).stop;
 )
