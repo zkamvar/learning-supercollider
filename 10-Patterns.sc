@@ -181,6 +181,8 @@ Pdef( // Any field here can be modified and re-run in real time without
 d = Dictionary.new;
 d.free;
 
+// Creating three keys, \l, \m, and \h. Each key points to an array of sound
+// files loaded into buffers
 d.add(\l -> PathName(~here +/+ "sounds/bubbles/low")
     .entries
     .collect({ |sf|
@@ -202,7 +204,7 @@ d.add(\h -> PathName(~here +/+ "sounds/bubbles/hi")
       Buffer.read(server: s, path: sf.fullPath, startFrame: 000, numFrames: 6000);
     });
 );
-)
+
 
 /* Test the sounds out
 d[\l].choose.play; 
@@ -212,7 +214,7 @@ d[\h].choose.play;
 
 // Now we can create a synth that will play our buffer dictionary
 
-(
+
 SynthDef.new(\bufplay, { 
   arg buf = 0, rate = 1, amp = 1;
   var sig;
@@ -228,17 +230,109 @@ SynthDef.new(\bufplay, {
 )
 
 /* Synth.new(\bufplay, [\buf, d[\l].choose.bufnum]) */
+// Initial Pdef: play each buffer at an interval of 0.12 seconds
+(
+Pdef(
+  \rhythm,
+  Pbind(
+    \instrument, \bufplay,
+    \dur, Pseq([0.12], inf),
+    \buf, Prand(d[\h]++d[\l]++d[\m], inf), // randomly select item from list
+    \rate, 1,
+    \amp, 0.6,
+  );
+).stop;
+)
 
+// Let's say we wanted to have the beats come in as 1/16 notes at 4/4 128bpm
+//
+// This introduces the \stretch parameter, which scales the \dur parameter. So,
+// the question is, how do you calculate the number of seconds per bar from
+// beats per minute?
+//
+// var bpm = 128     // beats per minute
+// var bps = bpm/60  // beats per second
+// var spb = 60/bpm  // seconds per beat
+// var spB = spb * 4 // seconds per bar
+(
+~spb_from_bpm = { |bpm = 666|
+  var spb, res;
+  spb = 60/bpm;
+  res = spb * 4;
+  res
+};
+~spb = ~spb_from_bpm.value(128);
+)
 (
 Pdef(
   \rhythm,
   Pbind(
     \instrument, \bufplay,
     \dur, Pseq([1/16], inf),
-    \stretch, 1.875, // 60/128 * 4,
-    \buf, Pxrand(d[\l]++d[\h]++d[\m], inf),
+    \stretch, ~spb, // time in seconds of the length of one bar at 4/4@128bpm
+    \buf, Pxrand(d[\h]++d[\l]++d[\m], inf), // never choose same value twice in a row
     \rate, 1,
     \amp, 0.6,
   );
 ).stop;
+)
+
+// Using weighted values for randomness
+(
+Pdef(
+  \rhythm,
+  Pbind(
+    \instrument, \bufplay,
+    \dur, Pseq([1/16], inf),
+    \stretch, ~spb, // time in seconds of the length of one bar at 4/4@128bpm
+    \buf, Pwrand( // randomly select from a weighted list
+      [d[\h][0], d[\l][0], d[\m][0]],
+      [1, 4, 0.5].normalizeSum, // normalizeSum: x/sum(x)
+      inf
+    ),
+    \rate, 1,
+    \amp, 0.6,
+  );
+).stop;
+)
+
+// Using accented beats for a more regular-sounding pattern.
+//
+// To achieve this, we could up the amplitude on beats 1 and 3. We could do this
+// by specifying
+//   
+//   \amp, Pseq([0.8]++(0.1!7), inf), 
+//
+// But, this is a bit predictable. We can add randomness by nesting Pexprand
+// inside:
+//
+//   \amp, Pseq([0.8, Pexprand(0.005, 0.2, 7)], inf),
+//
+// We will also set this so that we will always here a low hit on beat 1 and
+// a high hit on beat 3. to do this, we again nest Pseq
+(
+Pdef(
+  \rhythm,
+  Pbind(
+    \instrument, \bufplay,
+    \dur, Pseq([1/16], inf),
+    \stretch, ~spb, // time in seconds of the length of one bar at 4/4@128bpm
+    \buf, Pseq(
+      [
+        Prand(d[\l], 1),               // Low Beat 1 
+        Prand(d[\h]++d[\l]++d[\m], 7), // anything
+        Prand(d[\h], 1),               // High Beat 3
+        Prand(d[\h]++d[\l]++d[\m], 7), // anything
+      ],
+      inf
+    ),    
+    \rate, Pseq([0.6, Pexprand(0.752, 1.5, 7)], inf), // Sequencing the rate, too ^_^
+    \amp, Pseq([Pexprand(0.8, 1, 1), Pexprand(0.051, 0.2, 7)], inf),
+  );
+
+// In order to make sure that any updates happen on beat, set
+// .play(quant: ~spb)
+//
+// Afterwards, change it to .quant_(~spb)
+).play(quant: ~spb);
 )
