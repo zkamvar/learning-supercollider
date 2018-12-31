@@ -336,3 +336,4 @@ Pdef(
 // Afterwards, change it to .quant_(~spb)
 ).play(quant: ~spb);
 )
+Pdef(\rhythm).stop;
