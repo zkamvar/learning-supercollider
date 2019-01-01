@@ -311,6 +311,8 @@ Pdef(
 // We will also set this so that we will always here a low hit on beat 1 and
 // a high hit on beat 3. to do this, we again nest Pseq
 (
+~spb = ~spb_from_bpm.value(128);
+~bf = 33;
 Pdef(
   \rhythm,
   Pbind(
@@ -326,14 +328,80 @@ Pdef(
       ],
       inf
     ),    
-    \rate, Pseq([0.6, Pexprand(0.752, 1.5, 7)], inf), // Sequencing the rate, too ^_^
-    \amp, Pseq([Pexprand(0.8, 1, 1), Pexprand(0.051, 0.2, 7)], inf),
+    \rate, Pseq([0.8, Pexprand(1.0, 1.1, 7)], inf), // Sequencing the rate, too ^_^
+    \amp, Pseq([Pexprand(0.6, 0.8, 1), Pexprand(0.050, 0.2, 7)], inf),
   );
 
 // In order to make sure that any updates happen on beat, set
 // .play(quant: ~spb)
 //
-// Afterwards, change it to .quant_(~spb)
+// Afterwards, change it to .play(quant: ~spb)
+).play(quant: ~spb);
+Pdef(
+  \sound,
+  Pbind(
+    \instrument, \sin,
+    \dur, Pseq([1/16], inf),
+    \stretch, ~spb, // time in seconds of the length of one bar at 4/4@128bpm
+    \instrument, \sine,
+    \midinote, Pseq([~bf], inf).trace,
+    \atk, Pwhite(0.0, 0.051, inf),
+    \rel, Pseq(
+      [
+        Pseq([1.5], 1),               // Low Beat 1 
+        Pexprand(0.5, 1.01, 7).round, // anything
+        Pseq([2.0], 1),               // High Beat 3
+        Pexprand(0.5, 1.01, 7).round, // anything
+      ],
+      inf
+    ),
+    \pan, Pwhite(-0.3, 0.8, inf),
+    \harmonic, Pseq(
+      [
+        Prand([0, 3, 7], 1),               // Low Beat 1 
+        Pexprand(0, 20, 7).round, // anything
+        Prand([2, 7, 5] , 1),               // High Beat 3
+        Pexprand(30, 60, 7).round, // anything
+      ],
+      inf
+    ),    
+    \amp, Pseq([Pexprand(0.3, 0.5, 1), Pexprand(0.050, 0.2, 7)], inf),
+  );
+
+// In order to make sure that any updates happen on beat, set
+// .play(quant: ~spb)
+//
+// Afterwards, change it to .play(quant: ~spb)
+).play(quant: ~spb);
+Pdef(
+  \bass,
+  Pbind(
+    \instrument, \sin,
+    \dur, Pseq([1/16], inf),
+    \stretch, ~spb, // time in seconds of the length of one bar at 4/4@128bpm
+    \instrument, \sine,
+    \midinote, Pseq([~bf - 36 + 7], inf).trace,
+    \atk, 0,
+    \rel, Pseq(
+      [
+        Pseq([2], 1),               // Low Beat 1 
+        Pexprand(0.5, 1.01, 3).round, // anything
+        Pseq([2], 1),               // High Beat 3
+        Pexprand(0.5, 1.01, 3).round, // anything
+      ],
+      inf
+    ),
+    \pan, Pwhite(-0.8, 0.3, inf),
+    \harmonic, Pseq([0, 2, 7, 4, 12, 0, 12, 7], inf),    
+    \amp, Pseq([Pexprand(0.3, 0.5, 1), Pexprand(0.150, 0.2, 3)], inf),
+  );
+
+// In order to make sure that any updates happen on beat, set
+// .play(quant: ~spb)
+//
+// Afterwards, change it to .play(quant: ~spb)
 ).play(quant: ~spb);
 )
 Pdef(\rhythm).stop;
+Pdef(\sound).stop;
+Pdef(\bass).stop;
