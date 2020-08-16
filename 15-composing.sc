@@ -164,12 +164,12 @@ Synth(\bpfsaw); // Not really noticable on its own
     amp=1, out=0;
     var sig, env;
     env = EnvGen.kr(Env([0,1,1,0], [atk,sus,rel], [c1,0,c2]), doneAction: 2);
-    sig = Saw.ar(freq * LFNoise1.kr(0.5,detune).midiratio); // once ever two seconds and scale it by the detune value
+    sig = Saw.ar(freq * LFNoise1.kr(0.5,detune).midiratio); 
     sig = BPF.ar(
       sig,
       LFNoise1.kr(0.2).exprange(cfmin, cfmax),
       LFNoise1.kr(0.1).exprange(rqmin, rqmax),
-    ); // cf = center frequency; rq = reciprocal quality
+    );
     sig = sig * env * amp;
     Out.ar(out, sig);
   }).add;
@@ -219,12 +219,12 @@ Synth(\bpfsaw); // Not really noticable on its own
     amp=1, out=0;
     var sig, env;
     env = EnvGen.kr(Env([0,1,1,0], [atk,sus,rel], [c1,0,c2]), doneAction: 2);
-    sig = Saw.ar(freq * LFNoise1.kr(0.5,detune).midiratio); // once ever two seconds and scale it by the detune value
+    sig = Saw.ar(freq * LFNoise1.kr(0.5,detune).midiratio);
     sig = BPF.ar(
       sig,
       LFNoise1.kr(0.2).exprange(cfmin, cfmax),
       LFNoise1.kr(0.1).exprange(rqmin, rqmax),
-    ); // cf = center frequency; rq = reciprocal quality
+    );
     sig = Pan2.ar(
       sig, 
       pan, // auto-random: LFNoise1.kr(0).rrand(-1, 1),
@@ -284,12 +284,12 @@ Synth(\bpfsaw); // Not really noticable on its own
     var sig, env;
     env = EnvGen.kr(Env([0,1,1,0], [atk,sus,rel], [c1,0,c2]), doneAction: 2);
     // --- Functional channel expansion with {LFO()}!2
-    sig = Saw.ar(freq * {LFNoise1.kr(0.5,detune).midiratio}!2); // once ever two seconds and scale it by the detune value
+    sig = Saw.ar(freq * {LFNoise1.kr(0.5,detune).midiratio}!2);
     sig = BPF.ar(
       sig,
       {LFNoise1.kr(0.2).exprange(cfmin, cfmax)}!2,
       {LFNoise1.kr(0.1).exprange(rqmin, rqmax)}!2,
-    ); // cf = center frequency; rq = reciprocal quality
+    );
     // --- BALANCE provides a way for us to get balance between left and right
     //     channels. 
     sig = Balance2.ar(sig[0], sig[1], pan);
@@ -486,3 +486,4 @@ Pbind(
 ).play;
 )
 ~chords.stop;
+
