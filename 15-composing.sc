@@ -440,6 +440,9 @@ Pbind(
 )
 // To create chords, we stack arrays within the progression array. This creates
 // a predictable pattern of chords. 
+//
+// Note: this is using an E major scale (I don't think he mentions that until
+// later in the video)
 (
 Pbind(
   \instrument, \bpfsaw,
@@ -540,4 +543,142 @@ Synth.new(
 ).play;
 )
 
+// If we want our resonant frequencies to be equal but random, we can't just
+// call Pexprand() twice, we need to use Pkey() to reuse and argument.
+(
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Pexprand(0.1, 1, inf), // random duration for the strikes
+  \freq, Pexprand(0.25, 9, inf), // random tempos
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, Pexprand(150, 1500, inf), // random center frequency
+  \cfmax, Pkey(\cfmin),             // copied so that it's fixed the duration.
+  \amp, 1.5,
+  \out, 0,
+).play;
+)
+// Instead of having random center frequencies, we can synch it up with our
+// other instruments by using a Scale. 
+(
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Pexprand(0.1, 1, inf), // random duration for the strikes
+  \freq, Pexprand(0.25, 9, inf), // random tempos
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, Prand((Scale.major.degrees+64).midicps,inf), // E-major scale
+  \cfmax, Pkey(\cfmin),                                // (in cycles per second)
+  \amp, 1.5,
+  \out, 0,
+).play;
+)
+// We can do math on the scale to transform octaves, shifting things up and down
+// the keyboard.
+(
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Pexprand(0.1, 1, inf), // random duration for the strikes
+  \freq, Pexprand(0.25, 9, inf), // random tempos
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, Prand((Scale.major.degrees+64).midicps, inf) * Prand([0.5, 1, 2, 4], inf),
+  \cfmax, Pkey(\cfmin),
+  \amp, 1.5,
+  \out, 0,
+).play;
+)
+// To make the rythym more regular, we can switch out the random duration and 
+// frequency to be more deterministic with an array of values
+(
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Prand([1, 0.5], inf), // A new synth every second or half second
+  \freq, Prand([ // related beat signatures from 1 every two seconds to 8/s
+    1/2, 2/3, 1, 4/3, 2, 5/2, 3, 4, 6, 8 
+  ], inf),
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, Prand((Scale.major.degrees+64).midicps, inf) * Prand([0.5, 1, 2, 4], inf),
+  \cfmax, Pkey(\cfmin),
+  \atk, 3, // lengthening envelope for each synth
+  \sus, 1, //
+  \rel, 5, //
+  \amp, Pexprand(1, 1.5, inf),
+  \out, 0,
+).play;
+)
+// To detune these, we DON'T adjust the detune value because it affects the
+// fundamental frequency... we need to modify the center frequency. 
+//
+// The way to do this is to multiply the maximum center frequency by some rando
+// value _slightly_ larger than one.
+(
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Prand([1, 0.5], inf), // A new synth every second or half second
+  \freq, Prand([ // related beat signatures from 1 every two seconds to 8/s
+    1/2, 2/3, 1, 4/3, 2, 5/2, 3, 4, 6, 8 
+  ], inf),
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, Prand((Scale.major.degrees+64).midicps, inf) * Prand([0.5, 1, 2, 4], inf),
+  \cfmax, Pkey(\cfmin) * Pwhite(1.008, 1.025, inf),
+  \atk, 3, 
+  \sus, 1,
+  \rel, 5,
+  \amp, Pexprand(1, 1.5, inf),
+  \out, 0,
+).play;
+)
+// ## Finale
+//
+// We can play both of these simultaneously
+(
+
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Prand([1, 0.5], inf), // A new synth every second or half second
+  \freq, Prand([ // related beat signatures from 1 every two seconds to 8/s
+    1/2, 2/3, 1, 4/3, //2, 5/2, 3, 4, 6, 8 
+  ], inf),
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, Prand((Scale.major.degrees+64).midicps, inf) * Prand([0.5, 1, 2, 4], inf),
+  \cfmax, Pkey(\cfmin) * Pwhite(1.008, 1.025, inf),
+  \atk, 3, 
+  \sus, 1,
+  \rel, 5,
+  \amp, Pexprand(0.9, 1.1, inf),
+  \out, 0,
+).play;
+
+~chords = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Pwhite(4.5, 7.0, inf), // duration
+  \midinote, Pxrand([ // Note: changed to pxrand
+    [23,25,54,63,64],
+    [45,52,54,59,61,64],
+    [28,40,47,56,59,63],
+    [42,52,57,61,63], // added pattern
+  ], inf),            // goes on forever
+  // Synth options
+  \detune, Pexprand(0.05, 0.2, inf),
+  \cfmin, 100,
+  \cfmax, 1500,
+  \rqmin, Pexprand(0.01, 0.15, inf),
+  \akt, Pwhite(2.0, 2.5, inf),
+  \rel, Pwhite(6.5, 10.0, inf),
+  \ldb, 6,
+  \amp, Pexprand(0.3, 0.4, inf),
+  \out, 0,
+).play;
+)
+~chords.stop;
 ~marimba.stop;
