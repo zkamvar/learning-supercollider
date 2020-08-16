@@ -487,3 +487,57 @@ Pbind(
 )
 ~chords.stop;
 
+// # Stretching the  Synths
+//
+// We can use the synthdef to create an entirely different sound by modifying
+// argument values. If we lower the pitch of the sawtooth wave, then it gets a
+// more percussive quality below 20Hz
+//
+// We can use the BP filter to draw out certain qualities of the sounds.
+(
+Synth.new(
+  \bpfsaw,
+  [
+    \freq, 2,
+    \amp, 1.5,
+    \atk, 0,
+    \rqmin, 0.005,
+    \rqmax, 0.008,
+  ],
+);
+)
+// Because the center frequency varies within the synth via a range, we can set
+// this range to be equal to fix the frequency of this sound.
+(
+Synth.new(
+  \bpfsaw,
+  [
+    \freq, 2,
+    \amp, 1.5,
+    \atk, 0,
+    \rqmin, 0.005,
+    \rqmax, 0.008,
+    \cfmin, 880, // fixing the center frequency to be 880
+    \cfmax, 880,
+  ],
+);
+)
+// Now that we have this in our toolbox, we can use the randomization tools to
+// randomize the duration and frequency of the strikes. This example sounds a
+// bit like a drunken walk.
+(
+~marimba = Pbind(
+  \instrument, \bpfsaw,
+  \dur, Pexprand(0.1, 1, inf), // random duration for the strikes
+  \freq, Pexprand(0.25, 9, inf), // random tempos
+  \detune, 0,
+  \rqmin, 0.005,
+  \rqmax, 0.008,
+  \cfmin, 150,  // wide range of frequencies
+  \cfmax, 1500,
+  \amp, 1.5,
+  \out, 0,
+).play;
+)
+
+~marimba.stop;
