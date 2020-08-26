@@ -133,3 +133,71 @@ rrand(4,10).do {
 // We want to read in a bunch of files to use, and they are in a different
 // folder. To do this, we can use a dictionary to store the sounds in each
 // directory so that we know what we are referencing.
+(
+var add_entries;
+add_entries = {
+    // Recursive function to add entries of nested folders to a dictionary
+    // Each entry in the dictionary will contain sound files in that folder
+    arg subfolder;
+    // step 1: add all the files in an array
+    if (subfolder.files.size > 0) {
+        b.add(
+            subfolder.folderName.asSymbol ->
+            Array.fill(
+                subfolder.files.size,
+                {
+                    arg i;
+                    Buffer.read(s, subfolder.files[i].fullPath);
+                }
+            )
+        );
+    } {};
+    // step 2: if there are any folders underneath, recurse;
+    if (subfolder.folders.size > 0) {
+        subfolder.folders.do{
+            arg subsub;
+            add_entries.(subsub);
+        };
+    } {};
+};
+b = Dictionary.new;
+PathName(~here +/+ "sounds").entries.do{
+    arg subfolder;
+    if (subfolder.isFolder) {
+        add_entries.(subfolder);
+    } {
+        b.add(
+            subfolder.fileNameWithoutExtension.asSymbol ->
+            Array.fill(
+                1, Buffer.read(s, subfolder.fullPath)
+            )
+        )
+    };
+};
+)
+b.keys;
+b[\bubbles][1].play;
+b[\huhuh][0].play;
+b[\hi][0].play;
+b[\low][0].play;
+b[\peanut][0].play;
+b[\snaps][4].play;
+
+(
+rrand(4,10).do {
+    Synth(\bpfbuf,
+        [
+            \buf, b[\huhuh],//[rand(0, b[\bubbles].size)],
+            \atk, exprand(2, 3),
+            \sus, 1,
+            \rel, exprand(2, 3),
+            \bpfmix, 1,
+            \freq, (Scale.lydian.degrees+69).choose.midicps * [1,2].choose,
+            \rq, exprand(0.001, 0.008),
+            \amp, exprand(1, 3),
+            \rate, exprand(0.4, 1.2),
+            \pan, rrand(-0.5, 0.5),
+        ]
+    );
+}
+)
