@@ -138,11 +138,14 @@ var add_entries;
 add_entries = {
     // Recursive function to add entries of nested folders to a dictionary
     // Each entry in the dictionary will contain sound files in that folder
-    arg subfolder;
+    arg subfolder, parent = "";
+
+    var key;
+    key = (parent ++ "_" ++ subfolder.folderName).asSymbol;
     // step 1: add all the files in an array
     if (subfolder.files.size > 0) {
         b.add(
-            subfolder.folderName.asSymbol ->
+            key ->
             Array.fill(
                 subfolder.files.size,
                 {
@@ -156,7 +159,7 @@ add_entries = {
     if (subfolder.folders.size > 0) {
         subfolder.folders.do{
             arg subsub;
-            add_entries.(subsub);
+            add_entries.(subsub, key);
         };
     } {};
 };
@@ -164,10 +167,10 @@ b = Dictionary.new;
 PathName(~here +/+ "sounds").entries.do{
     arg subfolder;
     if (subfolder.isFolder) {
-        add_entries.(subfolder);
+        add_entries.(subfolder, "sounds");
     } {
         b.add(
-            subfolder.fileNameWithoutExtension.asSymbol ->
+            ("sounds_" ++ subfolder.fileNameWithoutExtension).asSymbol ->
             Array.fill(
                 1, Buffer.read(s, subfolder.fullPath)
             )
@@ -176,18 +179,18 @@ PathName(~here +/+ "sounds").entries.do{
 };
 )
 b.keys;
-b[\bubbles][1].play;
-b[\huhuh][0].play;
-b[\hi][0].play;
-b[\low][0].play;
-b[\peanut][0].play;
-b[\snaps][4].play;
+b[\sounds_bubbles][1].play;
+b[\sounds_huhuh][0].play;
+b[\sounds_bubbles_hi][0].play;
+b[\sounds_bubbles_low][0].play;
+b[\sounds_peanut][0].play;
+b[\sounds_snaps][4].play;
 
 (
 rrand(4,10).do {
     Synth(\bpfbuf,
         [
-            \buf, b[\huhuh],//[rand(0, b[\bubbles].size)],
+            \buf, b[\sounds_bubbles][rand(0, b[\sounds_bubbles].size)],
             \atk, exprand(2, 3),
             \sus, 1,
             \rel, exprand(2, 3),
@@ -201,3 +204,5 @@ rrand(4,10).do {
     );
 }
 )
+
+
