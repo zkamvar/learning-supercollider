@@ -4,8 +4,7 @@ s = Server.local; // Not a bad idea to make sure this is explicit
 ServerOptions.devices; // shows us the output devices available to us
 s.options.outDevice_(
 	"Built-in Output"
-	//"Soundflower (2ch)"
-	//"MOTU UltraLite mk3 Hybrid"
+	//"JoMo"
 );
 s.options.numOutputBusChannels_(2); // set the number of channels equal to the device capacity
 s.options.inDevice_("Built-in Microph");
@@ -14,6 +13,16 @@ s.options.numInputBusChannels_(2);
 s.options.sampleRate_(44100);
 // Setting amount of memory. This is important for Delay or Comb filters.
 s.options.memSize; // how much memory we have avaliable in Kb?
+// Defaults to 2^13 = 8192 Kb, but we need MORE. In a one-second delay, we need
+// enough memory to store 44100 samples.
+//
+// How many KB is 44100 samples?
+// By default, SC outputs 32bit floats, which means that each sample is 4 bytes
+// So 1 second of audio is (44100 * 4) / 1000 = 176.4 KB.
+//
+// If we have 10 delay lines, it's still okay because we only need 1764 KB of
+// memory, but once we get to 47 delay lines, then we get into trouble:
+47 * ((44100 * 4) / 1000)
 s.options.memSize_(2.pow(20));
 s.newBusAllocators;
 ServerBoot.removeAll;
@@ -26,6 +35,8 @@ ServerQuit.removeAll;
 
 
 //3. define piece-specific functions -----------------------------------------
+
+// This gets registered with serverBoot.add()
 ~makeBuffers = {
 	b = Dictionary.new;
 	PathName(~path).entries.do{
@@ -43,38 +54,53 @@ ServerQuit.removeAll;
 	};
 };
 
+// Use ServerBoot to register this... It will keep allocating new busses if we
+// use ServerTree.
 ~makeBusses = {
 	~bus = Dictionary.new;
 	~bus.add(\reverb -> Bus.audio(s,2));
 };
 
+// De-allocate any busses that happen
+// register with ServerQuit.add(~cleanup)
 ~cleanup = {
 	s.newBusAllocators;
-	ServerBoot.removeAll;
+	ServerBoot.removeAll; // un-register all the functions we registered
 	ServerTree.removeAll;
 	ServerQuit.removeAll;
 };
 
+// registered with ServerTree.add(~makeNodes);
+//
+// Creates nodes on the node tree in the right order
 ~makeNodes = {
-	s.bind({
-		~mainGrp = Group.new;
-		~reverbGrp = Group.after(~mainGrp);
+	s.bind({ // Takes a function and makes them a bundle of OSC messages...
+             // executing them at the same time to avoid delayed assignments
+		~mainGrp = Group.new; // target for any synths that generate signal
+		~reverbGrp = Group.after(~mainGrp); // reverb is after the main group
 		~reverbSynth = Synth.new(
-			\reverb,
+			\reverb, // note we need the syntDefs before we can register this
 			[
 				\amp, 1,
 				\predelay, 0.1,
 				\revtime, 1.8,
 				\lpf, 4500,
 				\mix, 0.35,
-				\in, ~bus[\reverb],
+				\in, ~bus[\reverb], // input from the reverb bus defined above
 				\out, ~out,
 			],
-			~reverbGrp
+			~reverbGrp // synth target
 		);
 	});
 };
 
+// the meat of the piece. This creates a dictionary of event functions that
+// contain things like Synth.new() and Pbind.
+//
+// It's also a great place to add in a MIDI controller with
+// MIDIIn.connectAll and
+// MIDIdef.cc(\controller) (note: this is for a controller pad), for a keyboard,
+//   we would use noteOn.
 ~makeEvents = {
 	MIDIIn.connectAll;
 	e = Dictionary.new;
@@ -333,10 +359,17 @@ ServerQuit.add(~cleanup);
 
 //5. boot server ---------------------------------------------------------------
 s.waitForBoot({
+    // We need to make sure the booting is complete until it evaluates the
+    // function we give it.
 
-	s.sync;
+    s.sync; // tells the server to alert when it's done
+            // caveat: Synchronous and Asynchronous execution
+            // SynthDefs are async, but calling those synths needs to
+            // make sure those synths have time to finish.
+            // s.waitForBoot automatically creates a routine that allows
+            // s.sync to perform inside this using the AppClock
 
-	//6a. SynthDefs
+	//6a. SynthDefs ------------------------------------------------------------
 	SynthDef(\bpfsaw, {
 		arg atk=2, sus=0, rel=3, c1=1, c2=(-1),
 		freq=500, detune=0.2, pan=0, cfhzmin=0.1, cfhzmax=0.3,
@@ -397,6 +430,10 @@ s.waitForBoot({
 
 	s.sync;
 
-	"done".postln;
+    "done".postln; // done setting up and it's safe to begin
 });
 )
+
+// Evaluate the code by calling the event dictionary
+e[\event4].play; // set to e[\event5].play;
+e[\oneshot2].value;
