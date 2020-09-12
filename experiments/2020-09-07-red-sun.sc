@@ -1,4 +1,12 @@
 (
+s = Server.local; // Not a bad idea to make sure this is explicit
+ServerOptions.devices; // shows us the output devices available to us
+s.options.outDevice_(
+	//"Built-in Output"
+	//"Soundflower (2ch)"
+    "Monitor-and-record"
+);
+s.options.numOutputBusChannels_(2);
 SynthDef.new(\thing, {
     arg out = 0, freq = 220, width = 0.5, aw = 100;
     var sig, amp, env;
