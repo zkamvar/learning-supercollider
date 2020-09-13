@@ -71,3 +71,29 @@ x.free
 
 
 NetAddr.langPort
+
+(
+// Sending messages to the OSC
+
+// This is the address and port for the iPad/iPhone
+b = NetAddr.new("192.168.0.7", 90210);
+w = Window.new.front;
+// This creates a gui slider and number box that responds to the slider.
+c = NumberBox(w, Rect(20, 20, 150, 20));
+a = Slider(w, Rect(20 , 60, 150, 20))
+    .action_({
+        c.value_(a.value);
+        b.sendMsg('/1/fader2', a.value);
+        });
+a.action.value;
+// This connects the fader of the Simple example in TouchOSC
+OSCdef.new(
+    \fad2,
+    {
+        arg msg, time, addr, port;
+        // defer is needed here or else we run into weird errors
+        {a.valueActionIfChanged_(msg[1])}.defer;
+    },
+    '/1/fader2'
+);
+)
