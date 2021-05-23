@@ -1,2 +1,3 @@
 *.swp
 recordings/*
+.DS_STORE
