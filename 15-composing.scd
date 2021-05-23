@@ -95,13 +95,14 @@ s.plotTree;
 // the midicps method always converts to cycles per second and choose will 
 // select a random element from the scale array
 Scale.minor.degrees //
+Scale.directory //
 (
 4.do{
   Synth(
     \bpfsaw,
     [
       // --- SCALES!!!
-      \freq, (Scale.minor.degrees + 60).midicps.choose,
+      \freq, (Scale.romanianMinor.degrees + 60).midicps.choose,
       \amp, 0.25,
       \cf, exprand(200,5000), 
       \rq, exprand(0.01, 0.5)
@@ -423,6 +424,29 @@ Synth(\bpfsaw); // Not really noticable on its own
 // Let's imagine we want to create chord progression. We use Pbind to create
 // the progression with Pseq creating the chords. Here's an example with simple
 // notes:
+// TANGENT: I was thinking about the clunky way I was getting scales to play and
+//   I wanted to find a way to get random notes from the scales into the 
+//   sequencer, so I went to the Scale documentation (shift + k in vim), but
+//   that made me realize that when I'm trying to pass things to degrees or
+//   midinotes, what I'm doing is actually passing an Array. I looked up how to
+//   choose a random subset of an array in place, but I now understand that
+//   there is no way to do that in this language. Instead, what I need to do is
+//   to generate the subset of indices and then apply that scale. Below are my
+//   attempts and some notes
+//
+//   // My first attempt was to do Scale.minor.choose(4) because I thought I 
+//   // could just choose 4 notes from that scale... and I was wrong. Instead,
+//   // the choose method belongs to the Scale generator, which will choose a
+//   // random scale with contstraints on size and pitches per octave:
+//   Scale.choose(7)
+//
+//   // From the documentation: tune a Lydian scale to Werckmeister (whatever
+//   // the hell that means, I don't know music theory very well.
+//   t = Tuning.werckmeister;
+//   a = Scale.lydian(t);
+//   // From here, select 4 random nodes from the scale and add 60 to get the
+//   // midi notes.
+//   a.degrees[Array.rand(4, 0, a.size - 1)] + 60;
 (
 Pbind(
   \instrument, \bpfsaw,
